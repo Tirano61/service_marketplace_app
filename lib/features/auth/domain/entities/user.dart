@@ -9,8 +9,13 @@ class User extends Equatable {
     required this.name,
     required this.phone,
     required this.role,
+    required this.latitude,
+    required this.longitude,
     this.photoUrl,
-    this.location,
+    this.province,
+    this.city,
+    this.address,
+    this.workRadius, // Solo para proveedores
     this.rating,
     this.completedJobs,
   });
@@ -20,10 +25,15 @@ class User extends Equatable {
   final String name;
   final String phone;
   final UserRole role;
+  final double latitude;
+  final double longitude;
   final String? photoUrl;
-  final UserLocation? location;
-  final double? rating; // Para proveedores
-  final int? completedJobs; // Para proveedores
+  final String? province;
+  final String? city;
+  final String? address;
+  final double? workRadius; // Para proveedores
+  final double? rating;
+  final int? completedJobs;
 
   @override
   List<Object?> get props => [
@@ -32,24 +42,14 @@ class User extends Equatable {
         name,
         phone,
         role,
+        latitude,
+        longitude,
         photoUrl,
-        location,
+        province,
+        city,
+        address,
+        workRadius,
         rating,
         completedJobs,
       ];
-}
-
-class UserLocation extends Equatable {
-  const UserLocation({
-    required this.latitude,
-    required this.longitude,
-    this.address,
-  });
-
-  final double latitude;
-  final double longitude;
-  final String? address;
-
-  @override
-  List<Object?> get props => [latitude, longitude, address];
 }
