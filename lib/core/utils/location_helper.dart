@@ -18,4 +18,7 @@ class LocationHelper {
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
     );
   }
+
+  // Alias for convenience
+  static Future<Position> getCurrentPosition() => currentPosition();
 }

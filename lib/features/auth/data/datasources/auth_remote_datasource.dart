@@ -6,11 +6,17 @@ import '../models/user_model.dart';
 abstract class AuthRemoteDataSource {
   Future<UserModel> login({required String email, required String password});
   Future<UserModel> register({
+    required String name,
     required String email,
     required String password,
-    required String name,
     required String phone,
     required String role,
+    required double latitude,
+    required double longitude,
+    required String province,
+    required String city,
+    required String address,
+    double? workRadius,
   });
   Future<void> logout();
   Future<UserModel?> getCurrentUser();
@@ -41,37 +47,54 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException('Login failed');
       }
     } on DioException catch (e) {
-      throw ServerException(e.message);
+      throw ServerException(e.message ?? 'Error en login');
     }
   }
 
   @override
   Future<UserModel> register({
+    required String name,
     required String email,
     required String password,
-    required String name,
     required String phone,
     required String role,
+    required double latitude,
+    required double longitude,
+    required String province,
+    required String city,
+    required String address,
+    double? workRadius,
   }) async {
     try {
+      final data = {
+        'name': name,
+        'email': email,
+        'password': password,
+        'phone': phone,
+        'role': role,
+        'latitude': latitude,
+        'longitude': longitude,
+        'province': province,
+        'city': city,
+        'address': address,
+      };
+
+      if (workRadius != null) {
+        data['workRadius'] = workRadius;
+      }
+
       final response = await _dio.post(
         '/auth/register',
-        data: {
-          'email': email,
-          'password': password,
-          'name': name,
-          'phone': phone,
-          'role': role,
-        },
+        data: data,
       );
 
-      if (response.statusCode == 201 || response.statusCode == 200) {
+      if (response.statusCode == 200 || response.statusCode == 201) {
         return UserModel.fromJson(response.data['user'] as Map<String, dynamic>);
       } else {
         throw ServerException('Registration failed');
       }
     } on DioException catch (e) {
-      throw ServerException(e.message);
+      throw ServerException(e.message ?? 'Error en registro');
     }
   }
 
@@ -80,7 +103,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
     try {
       await _dio.post('/auth/logout');
     } on DioException catch (e) {
-      throw ServerException(e.message);
+      throw ServerException(e.message ?? 'Error en logout');
     }
   }
 
@@ -97,7 +120,7 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
       if (e.response?.statusCode == 401) {
         return null; // No authenticated
       }
-      throw ServerException(e.message);
+      throw ServerException(e.message ?? 'Error obteniendo usuario');
     }
   }
 }

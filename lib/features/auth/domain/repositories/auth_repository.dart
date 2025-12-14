@@ -12,11 +12,17 @@ abstract class AuthRepository {
 
   /// Register a new user
   Future<Either<Failure, User>> register({
+    required String name,
     required String email,
     required String password,
-    required String name,
     required String phone,
     required UserRole role,
+    required double latitude,
+    required double longitude,
+    required String province,
+    required String city,
+    required String address,
+    double? workRadius,
   });
 
   /// Logout current user
@@ -24,13 +30,4 @@ abstract class AuthRepository {
 
   /// Get current authenticated user
   Future<Either<Failure, User?>> getCurrentUser();
-
-  /// Update user profile
-  Future<Either<Failure, User>> updateProfile({
-    required String userId,
-    String? name,
-    String? phone,
-    String? photoUrl,
-    UserLocation? location,
-  });
 }

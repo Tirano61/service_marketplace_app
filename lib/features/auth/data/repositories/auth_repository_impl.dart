@@ -38,20 +38,32 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<Either<Failure, User>> register({
+    required String name,
     required String email,
     required String password,
-    required String name,
     required String phone,
     required UserRole role,
+    required double latitude,
+    required double longitude,
+    required String province,
+    required String city,
+    required String address,
+    double? workRadius,
   }) async {
     try {
-      final roleString = role == UserRole.provider ? 'provider' : 'client';
+      final roleString = role == UserRole.provider ? 'PROVIDER' : 'CLIENT';
       final user = await _remoteDataSource.register(
+        name: name,
         email: email,
         password: password,
-        name: name,
         phone: phone,
         role: roleString,
+        latitude: latitude,
+        longitude: longitude,
+        province: province,
+        city: city,
+        address: address,
+        workRadius: workRadius,
       );
       await _localDataSource.cacheUser(user);
       return Right(user);
@@ -88,17 +100,5 @@ class AuthRepositoryImpl implements AuthRepository {
     } catch (e) {
       return Left(ServerFailure('Error al obtener usuario actual'));
     }
-  }
-
-  @override
-  Future<Either<Failure, User>> updateProfile({
-    required String userId,
-    String? name,
-    String? phone,
-    String? photoUrl,
-    UserLocation? location,
-  }) async {
-    // TODO: Implement when backend endpoint is ready
-    return Left(ServerFailure('No implementado aún'));
   }
 }

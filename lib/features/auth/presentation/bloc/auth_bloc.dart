@@ -63,11 +63,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     emit(state.copyWith(status: AuthStatus.loading));
 
     final result = await _registerUseCase(
+      name: event.name,
       email: event.email,
       password: event.password,
-      name: event.name,
       phone: event.phone,
       role: event.role,
+      latitude: event.latitude,
+      longitude: event.longitude,
+      province: event.province,
+      city: event.city,
+      address: event.address,
+      workRadius: event.workRadius,
     );
 
     result.fold(
