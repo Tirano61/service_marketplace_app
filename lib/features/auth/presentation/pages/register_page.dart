@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:geocoding/geocoding.dart' as geocoding;
+import 'package:geolocator/geolocator.dart';
 
 import 'package:service_marketplace_app/core/constants/app_colors.dart';
 import 'package:service_marketplace_app/core/constants/app_routes.dart';
@@ -100,7 +101,10 @@ class _RegisterPageState extends State<RegisterPage> {
         debugPrint('Address lookup failed: $e');
       }
     } catch (e) {
-      setState(() => _locationError = e.toString());
+      final errorMessage = e.toString().contains('Location permission denied')
+          ? 'Permiso de ubicación denegado. Por favor, habilita los permisos en la configuración de la aplicación.'
+          : 'Error al obtener ubicación: ${e.toString()}';
+      setState(() => _locationError = errorMessage);
     }
   }
 
@@ -242,7 +246,11 @@ class _RegisterPageState extends State<RegisterPage> {
           Navigator.of(context).pushReplacementNamed(AppRoutes.home);
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text(state.errorMessage ?? 'Error en registro')),
+            SnackBar(
+              content: Text(state.errorMessage ?? 'Error en registro'),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
           );
         }
       },
@@ -487,9 +495,25 @@ class _RegisterPageState extends State<RegisterPage> {
                 border: Border.all(color: AppColors.danger),
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Text(
-                _locationError!,
-                style: TextStyles.body2.copyWith(color: AppColors.danger),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    _locationError!,
+                    style: TextStyles.body2.copyWith(color: AppColors.danger),
+                  ),
+                  if (_locationError!.contains('Permiso'))
+                    Padding(
+                      padding: const EdgeInsets.only(top: 12),
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: OutlinedButton(
+                          onPressed: Geolocator.openLocationSettings,
+                          child: const Text('Abrir configuración de permisos'),
+                        ),
+                      ),
+                    ),
+                ],
               ),
             ),
           const SizedBox(height: 24),

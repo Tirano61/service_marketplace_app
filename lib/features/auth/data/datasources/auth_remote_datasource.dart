@@ -47,6 +47,13 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException('Login failed');
       }
     } on DioException catch (e) {
+      // Handle specific HTTP error codes
+      if (e.response?.statusCode == 401) {
+        throw ServerException('Email o contraseña incorrectos. Por favor, verifica tus credenciales.');
+      }
+      if (e.response?.statusCode == 404) {
+        throw ServerException('Este email no está registrado. Por favor, crea una nueva cuenta.');
+      }
       throw ServerException(e.message ?? 'Error en login');
     }
   }
@@ -94,6 +101,14 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException('Registration failed');
       }
     } on DioException catch (e) {
+      // Handle specific HTTP error codes
+      if (e.response?.statusCode == 409) {
+        throw ServerException('Este email ya está registrado. Por favor, usa otro email o intenta iniciar sesión.');
+      }
+      if (e.response?.statusCode == 400) {
+        final errorMessage = e.response?.data['message'] ?? 'Datos de registro inválidos';
+        throw ServerException('Error en registro: $errorMessage');
+      }
       throw ServerException(e.message ?? 'Error en registro');
     }
   }

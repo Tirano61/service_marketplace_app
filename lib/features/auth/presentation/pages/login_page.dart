@@ -50,6 +50,7 @@ class _LoginPageState extends State<LoginPage> {
                 SnackBar(
                   content: Text(state.errorMessage ?? 'Error desconocido'),
                   backgroundColor: Colors.red,
+                  duration: const Duration(seconds: 5),
                 ),
               );
             }
