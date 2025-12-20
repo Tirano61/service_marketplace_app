@@ -14,6 +14,12 @@ class LocationHelper {
   }
 
   static Future<Position> currentPosition() async {
+    // First, ensure permission is granted
+    final hasPermission = await ensurePermission();
+    if (!hasPermission) {
+      throw Exception('Location permission denied');
+    }
+
     return Geolocator.getCurrentPosition(
       locationSettings: const LocationSettings(accuracy: LocationAccuracy.high),
     );
