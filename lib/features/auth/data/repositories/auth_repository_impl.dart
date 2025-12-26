@@ -67,6 +67,11 @@ class AuthRepositoryImpl implements AuthRepository {
       );
       await _localDataSource.cacheUser(user);
       return Right(user);
+    } on EmailVerificationPendingException catch (e) {
+      return Left(EmailVerificationPendingFailure(
+        message: e.message,
+        email: e.email,
+      ));
     } on ServerException catch (e) {
       return Left(ServerFailure(e.message));
     } catch (e) {

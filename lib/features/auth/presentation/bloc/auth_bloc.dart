@@ -1,5 +1,6 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 
+import '../../../../core/errors/failures.dart';
 import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
@@ -77,12 +78,24 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     );
 
     result.fold(
-      (failure) => emit(
-        state.copyWith(
-          status: AuthStatus.error,
-          errorMessage: failure.message ?? 'Error al registrarse',
-        ),
-      ),
+      (failure) {
+        if (failure is EmailVerificationPendingFailure) {
+          emit(
+            state.copyWith(
+              status: AuthStatus.emailVerificationPending,
+              errorMessage: failure.message ?? 'Por favor, verifica tu email para activar tu cuenta.',
+              emailVerificationPending: failure.email,
+            ),
+          );
+        } else {
+          emit(
+            state.copyWith(
+              status: AuthStatus.error,
+              errorMessage: failure.message ?? 'Error al registrarse',
+            ),
+          );
+        }
+      },
       (user) => emit(
         state.copyWith(
           status: AuthStatus.authenticated,

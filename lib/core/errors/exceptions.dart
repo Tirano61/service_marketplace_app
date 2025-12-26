@@ -9,3 +9,12 @@ class CacheException implements Exception {
 
   final String? message;
 }
+class EmailVerificationPendingException implements Exception {
+  const EmailVerificationPendingException({
+    this.message,
+    this.email,
+  });
+
+  final String? message;
+  final String? email;
+}

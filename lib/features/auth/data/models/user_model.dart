@@ -25,15 +25,15 @@ class UserModel extends User {
       name: json['name'] as String,
       phone: json['phone'] as String,
       role: _roleFromString(json['role'] as String),
-      latitude: (json['latitude'] as num).toDouble(),
-      longitude: (json['longitude'] as num).toDouble(),
+      latitude: _parseDouble(json['latitude']),
+      longitude: _parseDouble(json['longitude']),
       photoUrl: json['avatar'] as String? ?? json['photoUrl'] as String?,
       province: json['province'] as String?,
       city: json['city'] as String?,
       address: json['address'] as String?,
-      workRadius: json['workRadius'] != null ? (json['workRadius'] as num).toDouble() : null,
-      rating: json['rating'] != null ? (json['rating'] as num).toDouble() : null,
-      completedJobs: json['completedJobs'] as int?,
+      workRadius: json['workRadius'] != null ? _parseDouble(json['workRadius']) : null,
+      rating: json['rating'] != null ? _parseDouble(json['rating']) : null,
+      completedJobs: json['completedJobs'] as int? ?? json['totalReviews'] as int?,
     );
   }
 
@@ -62,5 +62,13 @@ class UserModel extends User {
 
   static String _roleToString(UserRole role) {
     return role == UserRole.provider ? 'PROVIDER' : 'CLIENT';
+  }
+
+  static double _parseDouble(dynamic value) {
+    if (value == null) return 0.0;
+    if (value is double) return value;
+    if (value is int) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? 0.0;
+    return 0.0;
   }
 }
