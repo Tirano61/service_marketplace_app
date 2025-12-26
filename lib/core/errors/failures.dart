@@ -15,3 +15,11 @@ class ServerFailure extends Failure {
 class CacheFailure extends Failure {
   const CacheFailure([super.message]);
 }
+class EmailVerificationPendingFailure extends Failure {
+  const EmailVerificationPendingFailure({
+    String? message,
+    this.email,
+  }) : super(message);
+
+  final String? email;
+}

@@ -41,12 +41,25 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         },
       );
 
-      if (response.statusCode == 200) {
-        return UserModel.fromJson(response.data['user'] as Map<String, dynamic>);
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        print('Login response status: ${response.statusCode}');
+        print('Login response data: ${response.data}');
+        
+        // Check if response has 'user' field
+        if (response.data is Map<String, dynamic> && response.data['user'] != null) {
+          return UserModel.fromJson(response.data['user'] as Map<String, dynamic>);
+        } else {
+          throw ServerException('Respuesta del servidor inválida: no contiene datos de usuario');
+        }
       } else {
         throw ServerException('Login failed');
       }
+    } on ServerException {
+      rethrow; // Pass through ServerException
     } on DioException catch (e) {
+      print('Login DioException: ${e.response?.statusCode}');
+      print('Login error data: ${e.response?.data}');
+      
       // Handle specific HTTP error codes
       if (e.response?.statusCode == 401) {
         throw ServerException('Email o contraseña incorrectos. Por favor, verifica tus credenciales.');
@@ -55,6 +68,9 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         throw ServerException('Este email no está registrado. Por favor, crea una nueva cuenta.');
       }
       throw ServerException(e.message ?? 'Error en login');
+    } catch (e) {
+      print('Login unexpected error: $e');
+      throw ServerException('Error inesperado al procesar el login: ${e.toString()}');
     }
   }
 
@@ -95,11 +111,28 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         data: data,
       );
 
+      // Handle response
       if (response.statusCode == 200 || response.statusCode == 201) {
-        return UserModel.fromJson(response.data['user'] as Map<String, dynamic>);
+        final responseData = response.data as Map<String, dynamic>;
+        
+        // Check if registration requires email verification (no user object returned)
+        if (responseData.containsKey('user')) {
+          // User object present - direct registration success
+          return UserModel.fromJson(responseData['user'] as Map<String, dynamic>);
+        } else {
+          // No user object - email verification required
+          final emailFromResponse = responseData['email'] as String? ?? email;
+          final message = responseData['message'] as String? ?? 'Registro exitoso. Revisa tu email para verificar tu cuenta.';
+          throw EmailVerificationPendingException(
+            message: message,
+            email: emailFromResponse,
+          );
+        }
       } else {
         throw ServerException('Registration failed');
       }
+    } on EmailVerificationPendingException {
+      rethrow; // Pass through email verification exception
     } on DioException catch (e) {
       // Handle specific HTTP error codes
       if (e.response?.statusCode == 409) {
