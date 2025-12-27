@@ -20,6 +20,7 @@ abstract class AuthRemoteDataSource {
   });
   Future<void> logout();
   Future<UserModel?> getCurrentUser();
+  Future<String> uploadAvatar({required String filePath});
 }
 
 class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
@@ -169,6 +170,41 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         return null; // No authenticated
       }
       throw ServerException(e.message ?? 'Error obteniendo usuario');
+    }
+  }
+
+  @override
+  Future<String> uploadAvatar({required String filePath}) async {
+    try {
+      // Crear FormData con el archivo
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          filePath,
+          filename: filePath.split('/').last,
+        ),
+      });
+
+      final response = await _dio.post(
+        '/upload/avatar',
+        data: formData,
+        options: Options(
+          contentType: 'multipart/form-data',
+        ),
+      );
+
+      if (response.statusCode == 200 && response.data['avatarUrl'] != null) {
+        return response.data['avatarUrl'] as String;
+      } else {
+        throw ServerException('Respuesta del servidor inválida');
+      }
+    } on DioException catch (e) {
+      if (e.response?.statusCode == 400) {
+        final errorMessage = e.response?.data['message'] ?? 'Error al subir avatar';
+        throw ServerException(errorMessage);
+      }
+      throw ServerException(e.message ?? 'Error al subir avatar');
+    } catch (e) {
+      throw ServerException('Error inesperado al subir avatar: ${e.toString()}');
     }
   }
 }

@@ -106,4 +106,16 @@ class AuthRepositoryImpl implements AuthRepository {
       return Left(ServerFailure('Error al obtener usuario actual'));
     }
   }
+
+  @override
+  Future<Either<Failure, String>> uploadAvatar({required String filePath}) async {
+    try {
+      final avatarUrl = await _remoteDataSource.uploadAvatar(filePath: filePath);
+      return Right(avatarUrl);
+    } on ServerException catch (e) {
+      return Left(ServerFailure(e.message));
+    } catch (e) {
+      return Left(ServerFailure('Error al subir avatar'));
+    }
+  }
 }

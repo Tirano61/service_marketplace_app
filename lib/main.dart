@@ -13,6 +13,7 @@ import 'features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'features/auth/domain/usecases/login_usecase.dart';
 import 'features/auth/domain/usecases/logout_usecase.dart';
 import 'features/auth/domain/usecases/register_usecase.dart';
+import 'features/auth/domain/usecases/upload_avatar_usecase.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/onboarding_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
@@ -44,6 +45,7 @@ void main() async {
   final registerUseCase = RegisterUseCase(authRepository);
   final logoutUseCase = LogoutUseCase(authRepository);
   final getCurrentUserUseCase = GetCurrentUserUseCase(authRepository);
+  final uploadAvatarUseCase = UploadAvatarUseCase(authRepository);
 
   runApp(
     MyApp(
@@ -51,6 +53,7 @@ void main() async {
       registerUseCase: registerUseCase,
       logoutUseCase: logoutUseCase,
       getCurrentUserUseCase: getCurrentUserUseCase,
+      uploadAvatarUseCase: uploadAvatarUseCase,
       sharedPreferences: sharedPreferences,
     ),
   );
@@ -61,6 +64,7 @@ void main() async {
     required this.registerUseCase,
     required this.logoutUseCase,
     required this.getCurrentUserUseCase,
+    required this.uploadAvatarUseCase,
     required this.sharedPreferences,
   });
 
@@ -68,6 +72,7 @@ void main() async {
   final RegisterUseCase registerUseCase;
   final LogoutUseCase logoutUseCase;
   final GetCurrentUserUseCase getCurrentUserUseCase;
+  final UploadAvatarUseCase uploadAvatarUseCase;
   final SharedPreferences sharedPreferences;
 
   @override
@@ -78,6 +83,7 @@ void main() async {
         registerUseCase: registerUseCase,
         logoutUseCase: logoutUseCase,
         getCurrentUserUseCase: getCurrentUserUseCase,
+        uploadAvatarUseCase: uploadAvatarUseCase,
       )..add(const AuthCheckRequested()), // Verificar sesión al iniciar
       child: MaterialApp(
         title: AppStrings.appName,
