@@ -35,6 +35,40 @@ class User extends Equatable {
   final double? rating;
   final int? completedJobs;
 
+  User copyWith({
+    String? id,
+    String? email,
+    String? name,
+    String? phone,
+    UserRole? role,
+    double? latitude,
+    double? longitude,
+    String? photoUrl,
+    String? province,
+    String? city,
+    String? address,
+    double? workRadius,
+    double? rating,
+    int? completedJobs,
+  }) {
+    return User(
+      id: id ?? this.id,
+      email: email ?? this.email,
+      name: name ?? this.name,
+      phone: phone ?? this.phone,
+      role: role ?? this.role,
+      latitude: latitude ?? this.latitude,
+      longitude: longitude ?? this.longitude,
+      photoUrl: photoUrl ?? this.photoUrl,
+      province: province ?? this.province,
+      city: city ?? this.city,
+      address: address ?? this.address,
+      workRadius: workRadius ?? this.workRadius,
+      rating: rating ?? this.rating,
+      completedJobs: completedJobs ?? this.completedJobs,
+    );
+  }
+
   @override
   List<Object?> get props => [
         id,

@@ -30,4 +30,7 @@ abstract class AuthRepository {
 
   /// Get current authenticated user
   Future<Either<Failure, User?>> getCurrentUser();
+
+  /// Upload user avatar
+  Future<Either<Failure, String>> uploadAvatar({required String filePath});
 }

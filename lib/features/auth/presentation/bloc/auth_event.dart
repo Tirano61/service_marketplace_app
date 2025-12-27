@@ -72,3 +72,12 @@ class AuthLogoutRequested extends AuthEvent {
 class AuthCheckRequested extends AuthEvent {
   const AuthCheckRequested();
 }
+
+class AuthUploadAvatarRequested extends AuthEvent {
+  const AuthUploadAvatarRequested({required this.filePath});
+
+  final String filePath;
+
+  @override
+  List<Object?> get props => [filePath];
+}

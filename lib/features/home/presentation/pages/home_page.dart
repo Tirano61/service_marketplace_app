@@ -6,6 +6,7 @@ import 'package:service_marketplace_app/core/theme/text_styles.dart';
 import 'package:service_marketplace_app/features/auth/presentation/bloc/auth_bloc.dart';
 import 'package:service_marketplace_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:service_marketplace_app/features/auth/presentation/bloc/auth_state.dart';
+import 'package:service_marketplace_app/features/home/presentation/widgets/avatar_upload_widget.dart';
 
 class HomePage extends StatelessWidget {
   const HomePage({super.key});
@@ -39,6 +40,13 @@ class HomePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  // Avatar del usuario
+                  AvatarUploadWidget(
+                    photoUrl: user?.photoUrl,
+                    userName: user?.name,
+                  ),
+                  const SizedBox(height: 24),
+                  
                   Text(
                     '¡Bienvenido, ${user?.name}!',
                     style: TextStyles.h2,

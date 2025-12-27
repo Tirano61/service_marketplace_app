@@ -5,6 +5,7 @@ import '../../domain/usecases/get_current_user_usecase.dart';
 import '../../domain/usecases/login_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/register_usecase.dart';
+import '../../domain/usecases/upload_avatar_usecase.dart';
 import 'auth_event.dart';
 import 'auth_state.dart';
 
@@ -14,21 +15,25 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     required RegisterUseCase registerUseCase,
     required LogoutUseCase logoutUseCase,
     required GetCurrentUserUseCase getCurrentUserUseCase,
+    required UploadAvatarUseCase uploadAvatarUseCase,
   })  : _loginUseCase = loginUseCase,
         _registerUseCase = registerUseCase,
         _logoutUseCase = logoutUseCase,
         _getCurrentUserUseCase = getCurrentUserUseCase,
+        _uploadAvatarUseCase = uploadAvatarUseCase,
         super(const AuthState()) {
     on<AuthLoginRequested>(_onLoginRequested);
     on<AuthRegisterRequested>(_onRegisterRequested);
     on<AuthLogoutRequested>(_onLogoutRequested);
     on<AuthCheckRequested>(_onCheckRequested);
+    on<AuthUploadAvatarRequested>(_onUploadAvatarRequested);
   }
 
   final LoginUseCase _loginUseCase;
   final RegisterUseCase _registerUseCase;
   final LogoutUseCase _logoutUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
+  final UploadAvatarUseCase _uploadAvatarUseCase;
 
   Future<void> _onLoginRequested(
     AuthLoginRequested event,
@@ -149,6 +154,43 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
         } else {
           emit(
             const AuthState(status: AuthStatus.unauthenticated),
+          );
+        }
+      },
+    );
+  }
+
+  Future<void> _onUploadAvatarRequested(
+    AuthUploadAvatarRequested event,
+    Emitter<AuthState> emit,
+  ) async {
+    emit(state.copyWith(status: AuthStatus.uploadingAvatar));
+
+    final result = await _uploadAvatarUseCase(filePath: event.filePath);
+
+    result.fold(
+      (failure) => emit(
+        state.copyWith(
+          status: AuthStatus.error,
+          errorMessage: failure.message ?? 'Error al subir avatar',
+        ),
+      ),
+      (avatarUrl) async {
+        // Actualizar el usuario con la nueva URL del avatar
+        if (state.user != null) {
+          final updatedUser = state.user!.copyWith(photoUrl: avatarUrl);
+          emit(
+            state.copyWith(
+              status: AuthStatus.avatarUploaded,
+              user: updatedUser,
+            ),
+          );
+          // Volver al estado autenticado después de un breve momento
+          await Future.delayed(const Duration(milliseconds: 500));
+          emit(
+            state.copyWith(
+              status: AuthStatus.authenticated,
+            ),
           );
         }
       },
