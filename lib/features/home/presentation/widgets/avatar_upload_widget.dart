@@ -232,13 +232,23 @@ class _AvatarUploadWidgetState extends State<AvatarUploadWidget> {
   Widget build(BuildContext context) {
     return BlocListener<AuthBloc, AuthState>(
       listener: (context, state) {
-        if (state.status == AuthStatus.avatarUploaded) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Avatar actualizado exitosamente'),
-              backgroundColor: Colors.green,
-            ),
-          );
+        // Mostrar mensaje cuando volvemos a estado autenticado después de subir
+        if (state.status == AuthStatus.authenticated && 
+            state.user?.photoUrl != null && 
+            !_isPickingImage) {
+          // Solo mostrar si acabamos de actualizar el avatar
+          // Esto se detecta si el widget photoUrl cambió
+          Future.delayed(Duration.zero, () {
+            if (mounted && widget.photoUrl != state.user?.photoUrl) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                  content: Text('Avatar actualizado exitosamente'),
+                  backgroundColor: Colors.green,
+                  duration: Duration(seconds: 2),
+                ),
+              );
+            }
+          });
         } else if (state.status == AuthStatus.error) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(

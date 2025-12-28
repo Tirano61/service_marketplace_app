@@ -10,7 +10,6 @@ enum AuthStatus {
   error,
   emailVerificationPending,
   uploadingAvatar,
-  avatarUploaded,
 }
 
 class AuthState extends Equatable {

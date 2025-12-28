@@ -28,7 +28,7 @@ void main() async {
 
   // Initialize dependencies
   final sharedPreferences = await SharedPreferences.getInstance();
-  final apiClient = ApiClient();
+  final apiClient = ApiClient(sharedPreferences: sharedPreferences);
 
   // Auth datasources
   final authRemoteDataSource = AuthRemoteDataSourceImpl(apiClient.client);

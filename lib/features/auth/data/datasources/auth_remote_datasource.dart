@@ -150,9 +150,21 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<void> logout() async {
     try {
+      print('Cerrando sesión en el servidor...');
       await _dio.post('/auth/logout');
+      print('Sesión cerrada en el servidor exitosamente');
     } on DioException catch (e) {
-      throw ServerException(e.message ?? 'Error en logout');
+      print('Error al cerrar sesión en servidor: ${e.response?.statusCode}');
+      // Aunque falle el logout en el servidor, permitimos continuar
+      // para que se limpie el cache local
+      if (e.response?.statusCode == 401) {
+        print('Token ya inválido o expirado, continuando con logout local');
+      } else {
+        print('Error en logout del servidor, pero continuando con logout local');
+      }
+    } catch (e) {
+      print('Error inesperado en logout: $e');
+      // Permitimos continuar para limpiar el cache local
     }
   }
 
@@ -176,6 +188,8 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
   @override
   Future<String> uploadAvatar({required String filePath}) async {
     try {
+      print('Intentando subir avatar desde: $filePath');
+      
       // Crear FormData con el archivo
       final formData = FormData.fromMap({
         'file': await MultipartFile.fromFile(
@@ -184,27 +198,121 @@ class AuthRemoteDataSourceImpl implements AuthRemoteDataSource {
         ),
       });
 
+      print('Enviando petición a: /auth/avatar');
       final response = await _dio.post(
-        '/upload/avatar',
+        '/auth/avatar',
         data: formData,
         options: Options(
           contentType: 'multipart/form-data',
         ),
       );
 
-      if (response.statusCode == 200 && response.data['avatarUrl'] != null) {
-        return response.data['avatarUrl'] as String;
+      print('Respuesta del servidor: ${response.statusCode}');
+      print('Datos de respuesta completos: ${response.data}');
+      print('Tipo de datos: ${response.data.runtimeType}');
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        final data = response.data;
+        
+        // Intentar obtener la URL del avatar de diferentes formas posibles
+        String? avatarUrl;
+        
+        if (data is Map<String, dynamic>) {
+          // Intentar diferentes nombres de campo comunes
+          avatarUrl = data['avatarUrl'] as String? ?? 
+                     data['avatar'] as String? ?? 
+                     data['url'] as String? ?? 
+                     data['imageUrl'] as String? ??
+                     data['avatarURL'] as String?;
+          
+          print('Avatar URL encontrada: $avatarUrl');
+          
+          // Si la respuesta tiene un objeto 'user' con el avatar
+          if (avatarUrl == null && data['user'] != null) {
+            final user = data['user'] as Map<String, dynamic>;
+            avatarUrl = user['avatar'] as String? ?? 
+                       user['avatarUrl'] as String? ??
+                       user['photoUrl'] as String?;
+            print('Avatar URL encontrada en user: $avatarUrl');
+          }
+        }
+        
+        if (avatarUrl != null && avatarUrl.isNotEmpty) {
+          return avatarUrl;
+        } else {
+          print('ERROR: No se encontró URL del avatar en la respuesta');
+          print('Estructura de respuesta: $data');
+          throw ServerException(
+            'El servidor procesó la imagen pero no devolvió la URL. '
+            'Por favor, recarga la aplicación para ver los cambios.'
+          );
+        }
       } else {
-        throw ServerException('Respuesta del servidor inválida');
+        throw ServerException('Respuesta inesperada del servidor: ${response.statusCode}');
       }
+    } on ServerException {
+      rethrow;
     } on DioException catch (e) {
+      print('Error DioException: ${e.response?.statusCode}');
+      print('Mensaje de error: ${e.response?.data}');
+      
+      // Manejar diferentes códigos de error con mensajes amigables
+      if (e.response?.statusCode == 404) {
+        throw ServerException(
+          'El servicio de subida de imágenes no está disponible en este momento. '
+          'Por favor, contacta al administrador o intenta más tarde.'
+        );
+      }
+      
       if (e.response?.statusCode == 400) {
-        final errorMessage = e.response?.data['message'] ?? 'Error al subir avatar';
+        final errorMessage = e.response?.data is Map 
+            ? (e.response?.data['message'] ?? 'Formato de archivo no válido')
+            : 'El archivo seleccionado no es válido';
         throw ServerException(errorMessage);
       }
-      throw ServerException(e.message ?? 'Error al subir avatar');
+      
+      if (e.response?.statusCode == 401) {
+        throw ServerException(
+          'Tu sesión ha expirado. Por favor, cierra sesión y vuelve a iniciar.'
+        );
+      }
+      
+      if (e.response?.statusCode == 413) {
+        throw ServerException(
+          'La imagen es demasiado grande. Por favor, selecciona una imagen más pequeña.'
+        );
+      }
+      
+      if (e.response?.statusCode == 500) {
+        throw ServerException(
+          'Error en el servidor. Por favor, intenta nuevamente en unos momentos.'
+        );
+      }
+      
+      // Error genérico de red
+      if (e.type == DioExceptionType.connectionTimeout || 
+          e.type == DioExceptionType.sendTimeout ||
+          e.type == DioExceptionType.receiveTimeout) {
+        throw ServerException(
+          'La conexión está tardando mucho. Verifica tu conexión a internet e intenta nuevamente.'
+        );
+      }
+      
+      if (e.type == DioExceptionType.connectionError) {
+        throw ServerException(
+          'No se pudo conectar con el servidor. Verifica tu conexión a internet.'
+        );
+      }
+      
+      // Error desconocido
+      throw ServerException(
+        'No se pudo subir la imagen. Por favor, verifica tu conexión e intenta nuevamente.'
+      );
     } catch (e) {
-      throw ServerException('Error inesperado al subir avatar: ${e.toString()}');
+      print('Error inesperado: $e');
+      throw ServerException(
+        'Ocurrió un error inesperado al procesar la imagen. Por favor, intenta nuevamente.'
+      );
     }
   }
 }

@@ -47,9 +47,12 @@ class AuthLocalDataSourceImpl implements AuthLocalDataSource {
   @override
   Future<void> clearCache() async {
     try {
+      print('Eliminando datos locales...');
       await _prefs.remove(_keyUser);
       await _prefs.remove(_keyToken);
+      print('Token y usuario eliminados del almacenamiento local');
     } catch (e) {
+      print('Error al limpiar cache: $e');
       throw CacheException('Failed to clear cache');
     }
   }
