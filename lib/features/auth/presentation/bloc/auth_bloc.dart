@@ -175,21 +175,15 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
           errorMessage: failure.message ?? 'Error al subir avatar',
         ),
       ),
-      (avatarUrl) async {
+      (avatarUrl) {
         // Actualizar el usuario con la nueva URL del avatar
         if (state.user != null) {
           final updatedUser = state.user!.copyWith(photoUrl: avatarUrl);
-          emit(
-            state.copyWith(
-              status: AuthStatus.avatarUploaded,
-              user: updatedUser,
-            ),
-          );
-          // Volver al estado autenticado después de un breve momento
-          await Future.delayed(const Duration(milliseconds: 500));
+          // Emitir directamente el estado autenticado con el usuario actualizado
           emit(
             state.copyWith(
               status: AuthStatus.authenticated,
+              user: updatedUser,
             ),
           );
         }
