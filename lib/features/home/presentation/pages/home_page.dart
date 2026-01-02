@@ -7,6 +7,7 @@ import 'package:service_marketplace_app/features/auth/presentation/bloc/auth_blo
 import 'package:service_marketplace_app/features/auth/presentation/bloc/auth_event.dart';
 import 'package:service_marketplace_app/features/auth/presentation/bloc/auth_state.dart';
 import 'package:service_marketplace_app/features/auth/domain/entities/user.dart';
+import 'package:service_marketplace_app/features/services/presentation/pages/my_services_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -59,7 +60,7 @@ class _HomePageState extends State<HomePage> {
       // Navegación para PROVEEDORES
       switch (_currentIndex) {
         case 0:
-          return _ProviderServicesTab();
+          return const MyServicesPage();
         case 1:
           return _ProviderRequestsTab();
         case 2:
@@ -69,7 +70,7 @@ class _HomePageState extends State<HomePage> {
         case 4:
           return _ProfileTab();
         default:
-          return _ProviderServicesTab();
+          return const MyServicesPage();
       }
     } else {
       // Navegación para CLIENTES
@@ -159,54 +160,8 @@ class _HomePageState extends State<HomePage> {
 
 // ==================== TABS PARA PROVEEDORES ====================
 
-/// Tab 1 PROVEEDOR: Mis Servicios (servicios publicados)
-class _ProviderServicesTab extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.business_center, size: 80, color: Colors.grey[400]),
-            const SizedBox(height: 16),
-            Text(
-              'Mis Servicios',
-              style: TextStyles.h3,
-            ),
-            const SizedBox(height: 8),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 32),
-              child: Text(
-                'Aquí podrás gestionar los servicios que ofreces',
-                style: TextStyles.body2.copyWith(color: Colors.grey[600]),
-                textAlign: TextAlign.center,
-              ),
-            ),
-            const SizedBox(height: 24),
-            ElevatedButton.icon(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Crear servicio - Próximamente')),
-                );
-              },
-              icon: const Icon(Icons.add),
-              label: const Text('Agregar Servicio'),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Crear servicio - Próximamente')),
-          );
-        },
-        child: const Icon(Icons.add),
-      ),
-    );
-  }
-}
+// Tab 1 PROVEEDOR: Mis Servicios (servicios publicados)
+// IMPLEMENTADO: Ver lib/features/services/presentation/pages/my_services_page.dart
 
 /// Tab 2 PROVEEDOR: Solicitudes (appointments pendientes)
 class _ProviderRequestsTab extends StatelessWidget {
