@@ -22,6 +22,16 @@ import 'features/auth/presentation/bloc/auth_bloc.dart';
 import 'features/auth/presentation/bloc/auth_event.dart';
 import 'features/auth/presentation/bloc/auth_state.dart';
 import 'features/home/presentation/pages/home_page.dart';
+// Services imports
+import 'features/services/data/datasources/services_remote_datasource.dart';
+import 'features/services/data/repositories/services_repository_impl.dart';
+import 'features/services/domain/usecases/get_my_services_usecase.dart';
+import 'features/services/domain/usecases/create_service_usecase.dart';
+import 'features/services/domain/usecases/update_service_usecase.dart';
+import 'features/services/domain/usecases/delete_service_usecase.dart';
+import 'features/services/domain/usecases/get_categories_usecase.dart';
+import 'features/services/presentation/bloc/my_services_bloc.dart';
+import 'features/services/presentation/bloc/service_form_bloc.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -47,6 +57,19 @@ void main() async {
   final getCurrentUserUseCase = GetCurrentUserUseCase(authRepository);
   final uploadAvatarUseCase = UploadAvatarUseCase(authRepository);
 
+  // Services datasources and repository
+  final servicesRemoteDataSource = ServicesRemoteDataSourceImpl();
+  final servicesRepository = ServicesRepositoryImpl(
+    remoteDataSource: servicesRemoteDataSource,
+  );
+
+  // Services use cases
+  final getMyServicesUseCase = GetMyServicesUseCase(servicesRepository);
+  final createServiceUseCase = CreateServiceUseCase(servicesRepository);
+  final updateServiceUseCase = UpdateServiceUseCase(servicesRepository);
+  final deleteServiceUseCase = DeleteServiceUseCase(servicesRepository);
+  final getCategoriesUseCase = GetCategoriesUseCase(servicesRepository);
+
   runApp(
     MyApp(
       loginUseCase: loginUseCase,
@@ -54,6 +77,11 @@ void main() async {
       logoutUseCase: logoutUseCase,
       getCurrentUserUseCase: getCurrentUserUseCase,
       uploadAvatarUseCase: uploadAvatarUseCase,
+      getMyServicesUseCase: getMyServicesUseCase,
+      createServiceUseCase: createServiceUseCase,
+      updateServiceUseCase: updateServiceUseCase,
+      deleteServiceUseCase: deleteServiceUseCase,
+      getCategoriesUseCase: getCategoriesUseCase,
       sharedPreferences: sharedPreferences,
     ),
   );
@@ -65,6 +93,11 @@ void main() async {
     required this.logoutUseCase,
     required this.getCurrentUserUseCase,
     required this.uploadAvatarUseCase,
+    required this.getMyServicesUseCase,
+    required this.createServiceUseCase,
+    required this.updateServiceUseCase,
+    required this.deleteServiceUseCase,
+    required this.getCategoriesUseCase,
     required this.sharedPreferences,
   });
 
@@ -73,18 +106,40 @@ void main() async {
   final LogoutUseCase logoutUseCase;
   final GetCurrentUserUseCase getCurrentUserUseCase;
   final UploadAvatarUseCase uploadAvatarUseCase;
+  final GetMyServicesUseCase getMyServicesUseCase;
+  final CreateServiceUseCase createServiceUseCase;
+  final UpdateServiceUseCase updateServiceUseCase;
+  final DeleteServiceUseCase deleteServiceUseCase;
+  final GetCategoriesUseCase getCategoriesUseCase;
   final SharedPreferences sharedPreferences;
 
   @override
   Widget build(BuildContext context) {
-    return BlocProvider(
-      create: (context) => AuthBloc(
-        loginUseCase: loginUseCase,
-        registerUseCase: registerUseCase,
-        logoutUseCase: logoutUseCase,
-        getCurrentUserUseCase: getCurrentUserUseCase,
-        uploadAvatarUseCase: uploadAvatarUseCase,
-      )..add(const AuthCheckRequested()), // Verificar sesión al iniciar
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider(
+          create: (context) => AuthBloc(
+            loginUseCase: loginUseCase,
+            registerUseCase: registerUseCase,
+            logoutUseCase: logoutUseCase,
+            getCurrentUserUseCase: getCurrentUserUseCase,
+            uploadAvatarUseCase: uploadAvatarUseCase,
+          )..add(const AuthCheckRequested()),
+        ),
+        BlocProvider(
+          create: (context) => MyServicesBloc(
+            getMyServicesUseCase: getMyServicesUseCase,
+            deleteServiceUseCase: deleteServiceUseCase,
+          ),
+        ),
+        BlocProvider(
+          create: (context) => ServiceFormBloc(
+            getCategoriesUseCase: getCategoriesUseCase,
+            createServiceUseCase: createServiceUseCase,
+            updateServiceUseCase: updateServiceUseCase,
+          ),
+        ),
+      ],
       child: MaterialApp(
         title: AppStrings.appName,
         theme: AppTheme.light,

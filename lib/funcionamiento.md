@@ -253,20 +253,20 @@ lib/
 
 Pantallas de la aplicación
 FASE 1: Autenticación y Onboarding
-1. Splash Screen
+⬜ 1. Splash Screen
 
 Logo de la app
 Verificar si hay sesión activa
 Redirigir a Home o Login
 
-2. Onboarding (primera vez)
+⬜ 2. Onboarding (primera vez)
 
 3-4 slides explicando la app
 Beneficios para clientes
 Beneficios para proveedores
 Botón "Empezar"
 
-3. Login
+⬜ 3. Login
 
 Email
 Password
@@ -274,7 +274,7 @@ Botón "Iniciar sesión"
 Link "¿No tenés cuenta? Registrate"
 Link "¿Olvidaste tu contraseña?"
 
-4. Registro
+⬜ 4. Registro
 
 Paso 1: Email, Password, Confirmar password
 Paso 2: Nombre completo, Teléfono
@@ -285,7 +285,7 @@ Botón "Crear cuenta"
 
 
 FASE 2: Home y Navegación Principal
-5. Home (Bottom Navigation con 4-5 tabs)
+✅ 5. Home (Bottom Navigation con 4-5 tabs)
 Para CLIENTES:
 
 Tab 1: Explorar (buscar servicios)
@@ -306,7 +306,7 @@ Tab 5: Perfil
 FASE 3: Funcionalidad por Rol
 
 👤 PANTALLAS PARA CLIENTES
-6. Explorar Servicios
+⬜ 6. Explorar Servicios
 
 Barra de búsqueda
 Filtros: Categoría, Cobertura sugerida, Rating, Precio
@@ -321,7 +321,7 @@ Cobertura confirmada ("Estás dentro de 5 km del proveedor")
 
 Al tocar → ver detalle
 
-7. Detalle de Servicio
+⬜ 7. Detalle de Servicio
 
 Carousel de imágenes
 Nombre del servicio
@@ -337,7 +337,7 @@ Reviews de otros clientes
 Botón principal: "Solicitar servicio"
 Botón secundario: "Chatear"
 
-8. Perfil de Proveedor
+⬜ 8. Perfil de Proveedor
 
 Foto grande
 Nombre, rating promedio
@@ -347,7 +347,7 @@ Todos sus servicios publicados
 Lista completa de reviews
 Badges/logros (opcional: "100 trabajos completados")
 
-9. Crear Solicitud de Servicio
+⬜ 9. Crear Solicitud de Servicio
 
 Servicio seleccionado (read-only)
 Fecha y hora deseada (DateTimePicker)
@@ -362,7 +362,7 @@ Seleccionar en mapa
 Presupuesto estimado (opcional)
 Botón "Enviar solicitud"
 
-10. Mis Citas (Cliente)
+⬜ 10. Mis Citas (Cliente)
 
 Tabs:
 
@@ -381,7 +381,7 @@ Acciones según estado
 
 Al tocar → Detalle de cita
 
-11. Detalle de Cita (Cliente)
+⬜ 11. Detalle de Cita (Cliente)
 
 Estado actual con timeline visual
 Información del servicio
@@ -400,7 +400,7 @@ COMPLETED: "Calificar servicio"
 
 Botón de chat siempre visible
 
-12. Calificar Servicio
+⬜ 12. Calificar Servicio
 
 Rating con estrellas (1-5)
 Comentario (opcional)
@@ -409,7 +409,7 @@ Botón "Enviar calificación"
 
 
 🛠️ PANTALLAS PARA PROVEEDORES
-13. Mis Servicios
+✅ 13. Mis Servicios
 
 Lista de servicios publicados
 Cada servicio muestra:
@@ -422,7 +422,7 @@ FAB (Floating Action Button): "Agregar servicio"
 Al tocar → Editar servicio
 Swipe para eliminar
 
-14. Crear/Editar Servicio
+✅ 14. Crear/Editar Servicio
 
 Título del servicio
 Categoría (dropdown)
@@ -432,7 +432,7 @@ Radio de cobertura (km)
 Subir hasta 5 fotos
 Botón "Publicar" / "Guardar cambios"
 
-15. Solicitudes (Provider)
+⬜ 15. Solicitudes (Provider)
 
 Lista de solicitudes PENDING
 Cada solicitud muestra:
@@ -446,7 +446,7 @@ Vista previa de descripción
 
 Al tocar → Detalle de solicitud
 
-16. Detalle de Solicitud (Provider)
+⬜ 16. Detalle de Solicitud (Provider)
 
 Información del cliente
 Servicio solicitado
@@ -460,7 +460,7 @@ Botones principales:
 "Rechazar"
 "Chatear para más detalles"
 
-17. Agenda (Provider)
+⬜ 17. Agenda (Provider)
 
 Vista de calendario
 Appointments aceptados por fecha
@@ -472,7 +472,7 @@ Azul: ACCEPTED (confirmado)
 Verde: IN_PROGRESS
 Gris: COMPLETED
 
-18. Detalle de Cita (Provider)
+⬜ 18. Detalle de Cita (Provider)
 
 Similar a la del cliente pero desde perspectiva del proveedor
 Información del cliente
@@ -488,7 +488,7 @@ Botón de chat siempre visible
 
 
 💬 PANTALLAS COMUNES (AMBOS ROLES)
-19. Lista de Chats
+⬜ 19. Lista de Chats
 
 Conversaciones activas
 Cada chat muestra:
@@ -502,7 +502,7 @@ Appointment relacionado (pequeño tag)
 
 Ordenados por último mensaje
 
-20. Chat Individual
+⬜ 20. Chat Individual
 
 Mensajes en burbujas
 Propio mensaje: alineado derecha, color azul
@@ -516,7 +516,7 @@ Foto y nombre de la otra persona
 Estado online/offline (opcional)
 Botón para ir al appointment relacionado
 
-21. Perfil (Usuario actual)
+⬜ 21. Perfil (Usuario actual)
 
 Foto de perfil (tap para cambiar)
 Nombre, email, teléfono
@@ -534,14 +534,14 @@ Cerrar sesión
 
 
 
-22. Editar Perfil
+⬜ 22. Editar Perfil
 
 Cambiar foto
 Nombre, teléfono
 Actualizar ubicación
 Guardar cambios
 
-23. Notificaciones
+⬜ 23. Notificaciones
 
 Lista de notificaciones recibidas
 Tabs: Todas / No leídas
@@ -555,7 +555,7 @@ Al tocar → Navega a la pantalla relevante
 
 Marcar todas como leídas
 
-24. Configuración
+⬜ 24. Configuración
 
 Notificaciones push (on/off)
 Notificaciones de chat (on/off)
