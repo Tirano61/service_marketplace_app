@@ -418,16 +418,22 @@ class _CreateEditServicePageState extends State<CreateEditServicePage> {
               if (state is ServiceFormSubmitting)
                 Container(
                   color: Colors.black54,
-                  child: const Center(
+                  child: Center(
                     child: Card(
                       child: Padding(
-                        padding: EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(24),
                         child: Column(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            CircularProgressIndicator(),
-                            SizedBox(height: 16),
-                            Text('Guardando...'),
+                            const CircularProgressIndicator(),
+                            const SizedBox(height: 16),
+                            if ((state as ServiceFormSubmitting).totalImages != null && 
+                                (state as ServiceFormSubmitting).uploadingImageIndex != null)
+                              Text(
+                                'Subiendo imagen ${(state as ServiceFormSubmitting).uploadingImageIndex! + 1} de ${(state as ServiceFormSubmitting).totalImages}...',
+                              )
+                            else
+                              const Text('Guardando...'),
                           ],
                         ),
                       ),

@@ -77,7 +77,18 @@ class ServiceFormReady extends ServiceFormState {
       ];
 }
 
-class ServiceFormSubmitting extends ServiceFormState {}
+class ServiceFormSubmitting extends ServiceFormState {
+  final int? uploadingImageIndex;
+  final int? totalImages;
+
+  const ServiceFormSubmitting({
+    this.uploadingImageIndex,
+    this.totalImages,
+  });
+
+  @override
+  List<Object?> get props => [uploadingImageIndex, totalImages];
+}
 
 class ServiceFormSuccess extends ServiceFormState {
   final Service service;

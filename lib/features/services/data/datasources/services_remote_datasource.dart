@@ -1,3 +1,5 @@
+import 'dart:io';
+import 'package:dio/dio.dart';
 import '../models/service_model.dart';
 import '../models/category_model.dart';
 
@@ -43,59 +45,39 @@ abstract class ServicesRemoteDataSource {
   Future<void> deleteService(String serviceId);
 
   Future<void> toggleServiceStatus(String serviceId);
+
+  Future<String> uploadServiceImage(String serviceId, String imagePath);
+
+  Future<void> deleteServiceImage(String serviceId, String imageUrl);
 }
 
-// Implementación MOCK temporal hasta que conectemos el backend
 class ServicesRemoteDataSourceImpl implements ServicesRemoteDataSource {
-  // Datos mock para desarrollo
-  final List<CategoryModel> _mockCategories = [
-    const CategoryModel(id: '1', name: 'Plomería', icon: '🔧', serviceCount: 15),
-    const CategoryModel(id: '2', name: 'Electricidad', icon: '⚡', serviceCount: 12),
-    const CategoryModel(id: '3', name: 'Carpintería', icon: '🪚', serviceCount: 8),
-    const CategoryModel(id: '4', name: 'Pintura', icon: '🎨', serviceCount: 10),
-    const CategoryModel(id: '5', name: 'Jardinería', icon: '🌿', serviceCount: 6),
-    const CategoryModel(id: '6', name: 'Limpieza', icon: '🧹', serviceCount: 20),
-  ];
+  final Dio _dio;
 
-  final List<ServiceModel> _mockServices = [];
-
-  ServicesRemoteDataSourceImpl() {
-    // Inicializar con algunos servicios mock
-    _mockServices.addAll([
-      ServiceModel(
-        id: '1',
-        title: 'Reparación de Cañerías',
-        description: 'Servicio profesional de plomería. Arreglo de filtraciones, cambio de cañerías, instalación de artefactos.',
-        categoryId: '1',
-        categoryName: 'Plomería',
-        providerId: 'provider1',
-        providerName: 'Juan Pérez',
-        providerAvatar: 'https://ui-avatars.com/api/?name=Juan+Perez',
-        price: 5000,
-        priceType: 'fixed',
-        coverageRadiusKm: 10,
-        images: [
-          'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=400',
-        ],
-        rating: 4.5,
-        reviewCount: 23,
-        isActive: true,
-        createdAt: DateTime.now().subtract(const Duration(days: 30)),
-        updatedAt: DateTime.now().subtract(const Duration(days: 5)),
-      ),
-    ]);
-  }
+  ServicesRemoteDataSourceImpl(this._dio);
 
   @override
   Future<List<CategoryModel>> getCategories() async {
-    await Future.delayed(const Duration(milliseconds: 500)); // Simular latencia
-    return _mockCategories;
+    try {
+      final response = await _dio.get('/categories');
+      final List<dynamic> data = response.data['data'] ?? response.data;
+      return data.map((json) => CategoryModel.fromJson(json)).toList();
+    } catch (e) {
+      print('Error obteniendo categorías: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<List<ServiceModel>> getMyServices(String providerId) async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    return _mockServices.where((s) => s.providerId == providerId).toList();
+    try {
+      final response = await _dio.get('/services/my-services');
+      final List<dynamic> data = response.data['data'] ?? response.data;
+      return data.map((json) => ServiceModel.fromJson(json)).toList();
+    } catch (e) {
+      print('Error obteniendo mis servicios: $e');
+      rethrow;
+    }
   }
 
   @override
@@ -108,32 +90,35 @@ class ServicesRemoteDataSourceImpl implements ServicesRemoteDataSource {
     required double coverageRadiusKm,
     required List<String> imagePaths,
   }) async {
-    await Future.delayed(const Duration(seconds: 1));
+    try {
+      final response = await _dio.post(
+        '/services/create',
+        data: {
+          'title': title,
+          'description': description,
+          'categoryId': categoryId,
+          'price': price,
+          'priceType': priceType ?? 'negotiable',
+          'coverageRadiusKm': coverageRadiusKm,
+        },
+      );
 
-    final category = _mockCategories.firstWhere((c) => c.id == categoryId);
-    
-    final newService = ServiceModel(
-      id: DateTime.now().millisecondsSinceEpoch.toString(),
-      title: title,
-      description: description,
-      categoryId: categoryId,
-      categoryName: category.name,
-      providerId: 'current_user_id', // Esto vendría del auth
-      providerName: 'Usuario Actual',
-      providerAvatar: 'https://ui-avatars.com/api/?name=Usuario+Actual',
-      price: price,
-      priceType: priceType ?? 'negotiable',
-      coverageRadiusKm: coverageRadiusKm,
-      images: imagePaths,
-      rating: 0,
-      reviewCount: 0,
-      isActive: true,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    );
+      final createdService = ServiceModel.fromJson(response.data);
 
-    _mockServices.add(newService);
-    return newService;
+      // Subir las imágenes una por una
+      for (final imagePath in imagePaths) {
+        try {
+          await uploadServiceImage(createdService.id, imagePath);
+        } catch (e) {
+          print('Error subiendo imagen: $e');
+        }
+      }
+
+      return createdService;
+    } catch (e) {
+      print('Error creando servicio: $e');
+      rethrow;
+    }
   }
 
   @override
@@ -148,84 +133,71 @@ class ServicesRemoteDataSourceImpl implements ServicesRemoteDataSource {
     List<String>? imagePaths,
     bool? isActive,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 800));
+    try {
+      final response = await _dio.patch(
+        '/services/$serviceId',
+        data: {
+          if (title != null) 'title': title,
+          if (description != null) 'description': description,
+          if (categoryId != null) 'categoryId': categoryId,
+          if (price != null) 'price': price,
+          if (priceType != null) 'priceType': priceType,
+          if (coverageRadiusKm != null) 'coverageRadiusKm': coverageRadiusKm,
+          if (isActive != null) 'isActive': isActive,
+        },
+      );
 
-    final index = _mockServices.indexWhere((s) => s.id == serviceId);
-    if (index == -1) {
-      throw Exception('Service not found');
+      final updatedService = ServiceModel.fromJson(response.data);
+
+      // Si hay imágenes, gestionarlas
+      if (imagePaths != null && imagePaths.isNotEmpty) {
+        for (final imagePath in imagePaths) {
+          if (!imagePath.startsWith('http')) {
+            try {
+              await uploadServiceImage(serviceId, imagePath);
+            } catch (e) {
+              print('Error subiendo imagen: $e');
+            }
+          }
+        }
+      }
+
+      return updatedService;
+    } catch (e) {
+      print('Error actualizando servicio: $e');
+      rethrow;
     }
-
-    final oldService = _mockServices[index];
-    String categoryName = oldService.categoryName;
-    
-    if (categoryId != null && categoryId != oldService.categoryId) {
-      final category = _mockCategories.firstWhere((c) => c.id == categoryId);
-      categoryName = category.name;
-    }
-
-    final updatedService = ServiceModel(
-      id: oldService.id,
-      title: title ?? oldService.title,
-      description: description ?? oldService.description,
-      categoryId: categoryId ?? oldService.categoryId,
-      categoryName: categoryName,
-      providerId: oldService.providerId,
-      providerName: oldService.providerName,
-      providerAvatar: oldService.providerAvatar,
-      price: price ?? oldService.price,
-      priceType: priceType ?? oldService.priceType,
-      coverageRadiusKm: coverageRadiusKm ?? oldService.coverageRadiusKm,
-      images: imagePaths ?? oldService.images,
-      rating: oldService.rating,
-      reviewCount: oldService.reviewCount,
-      isActive: isActive ?? oldService.isActive,
-      createdAt: oldService.createdAt,
-      updatedAt: DateTime.now(),
-    );
-
-    _mockServices[index] = updatedService;
-    return updatedService;
   }
 
   @override
   Future<void> deleteService(String serviceId) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    _mockServices.removeWhere((s) => s.id == serviceId);
+    try {
+      await _dio.delete('/services/$serviceId');
+    } catch (e) {
+      print('Error eliminando servicio: $e');
+      rethrow;
+    }
   }
 
   @override
   Future<void> toggleServiceStatus(String serviceId) async {
-    await Future.delayed(const Duration(milliseconds: 500));
-    
-    final index = _mockServices.indexWhere((s) => s.id == serviceId);
-    if (index != -1) {
-      final service = _mockServices[index];
-      _mockServices[index] = ServiceModel(
-        id: service.id,
-        title: service.title,
-        description: service.description,
-        categoryId: service.categoryId,
-        categoryName: service.categoryName,
-        providerId: service.providerId,
-        providerName: service.providerName,
-        providerAvatar: service.providerAvatar,
-        price: service.price,
-        priceType: service.priceType,
-        coverageRadiusKm: service.coverageRadiusKm,
-        images: service.images,
-        rating: service.rating,
-        reviewCount: service.reviewCount,
-        isActive: !service.isActive,
-        createdAt: service.createdAt,
-        updatedAt: DateTime.now(),
-      );
+    try {
+      await _dio.patch('/services/$serviceId/toggle-status');
+    } catch (e) {
+      print('Error cambiando estado del servicio: $e');
+      rethrow;
     }
   }
 
   @override
   Future<ServiceModel> getServiceById(String id) async {
-    await Future.delayed(const Duration(milliseconds: 300));
-    return _mockServices.firstWhere((s) => s.id == id);
+    try {
+      final response = await _dio.get('/services/$id');
+      return ServiceModel.fromJson(response.data);
+    } catch (e) {
+      print('Error obteniendo servicio: $e');
+      rethrow;
+    }
   }
 
   @override
@@ -236,26 +208,88 @@ class ServicesRemoteDataSourceImpl implements ServicesRemoteDataSource {
     int? page,
     int? limit,
   }) async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    
-    var filtered = _mockServices.where((s) => s.isActive).toList();
-    
-    if (categoryId != null) {
-      filtered = filtered.where((s) => s.categoryId == categoryId).toList();
+    try {
+      final response = await _dio.get(
+        '/services',
+        queryParameters: {
+          if (categoryId != null) 'categoryId': categoryId,
+          if (latitude != null) 'latitude': latitude,
+          if (longitude != null) 'longitude': longitude,
+          if (page != null) 'page': page,
+          if (limit != null) 'limit': limit,
+        },
+      );
+      final List<dynamic> data = response.data['data'] ?? response.data;
+      return data.map((json) => ServiceModel.fromJson(json)).toList();
+    } catch (e) {
+      print('Error obteniendo servicios: $e');
+      rethrow;
     }
-    
-    return filtered;
   }
 
   @override
   Future<List<ServiceModel>> searchServices(String query) async {
-    await Future.delayed(const Duration(milliseconds: 600));
-    
-    final lowerQuery = query.toLowerCase();
-    return _mockServices.where((s) =>
-      s.title.toLowerCase().contains(lowerQuery) ||
-      s.description.toLowerCase().contains(lowerQuery) ||
-      s.categoryName.toLowerCase().contains(lowerQuery)
-    ).toList();
+    try {
+      final response = await _dio.get(
+        '/services/search',
+        queryParameters: {'query': query},
+      );
+      final List<dynamic> data = response.data['data'] ?? response.data;
+      return data.map((json) => ServiceModel.fromJson(json)).toList();
+    } catch (e) {
+      print('Error buscando servicios: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<String> uploadServiceImage(String serviceId, String imagePath) async {
+    try {
+      final file = File(imagePath);
+      final fileName = file.path.split('/').last;
+
+      final formData = FormData.fromMap({
+        'file': await MultipartFile.fromFile(
+          file.path,
+          filename: fileName,
+        ),
+      });
+
+      final response = await _dio.post(
+        '/upload/service-images/$serviceId',
+        data: formData,
+        options: Options(
+          headers: {
+            'Content-Type': 'multipart/form-data',
+          },
+        ),
+      );
+
+      final serviceData = response.data;
+      if (serviceData is Map<String, dynamic>) {
+        final images = serviceData['images'] as List?;
+        if (images != null && images.isNotEmpty) {
+          return images.last as String;
+        }
+      }
+
+      throw Exception('No se pudo obtener la URL de la imagen');
+    } catch (e) {
+      print('Error subiendo imagen: $e');
+      rethrow;
+    }
+  }
+
+  @override
+  Future<void> deleteServiceImage(String serviceId, String imageUrl) async {
+    try {
+      await _dio.delete(
+        '/services/$serviceId/images',
+        data: {'imageUrl': imageUrl},
+      );
+    } catch (e) {
+      print('Error eliminando imagen: $e');
+      rethrow;
+    }
   }
 }
