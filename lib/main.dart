@@ -58,7 +58,9 @@ void main() async {
   final uploadAvatarUseCase = UploadAvatarUseCase(authRepository);
 
   // Services datasources and repository
-  final servicesRemoteDataSource = ServicesRemoteDataSourceImpl();
+  final servicesRemoteDataSource = ServicesRemoteDataSourceImpl(
+    apiClient.client,
+  );
   final servicesRepository = ServicesRepositoryImpl(
     remoteDataSource: servicesRemoteDataSource,
   );
