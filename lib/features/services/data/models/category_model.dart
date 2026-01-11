@@ -10,11 +10,33 @@ class CategoryModel extends Category {
 
   factory CategoryModel.fromJson(Map<String, dynamic> json) {
     return CategoryModel(
-      id: json['id'] ?? json['_id'] ?? '',
-      name: json['name'] ?? '',
-      icon: json['icon'] ?? '🔧',
+      id: json['id'] ?? json['_id'] ?? json['value'] ?? '',
+      name: json['name'] ?? json['label'] ?? '',
+      icon: json['icon'] ?? _getIconForCategory(json['value'] ?? json['id'] ?? ''),
       serviceCount: json['service_count'] ?? json['serviceCount'] ?? 0,
     );
+  }
+
+  // Método auxiliar para asignar iconos según la categoría
+  static String _getIconForCategory(String categoryValue) {
+    const Map<String, String> categoryIcons = {
+      'WATER_PLUMBING': '🚰',
+      'GAS_PLUMBING': '🔥',
+      'ELECTRICAL': '⚡',
+      'CLEANING': '🧹',
+      'PAINTING': '🎨',
+      'CARPENTRY': '🔨',
+      'GARDENING': '🌿',
+      'APPLIANCE_REPAIR': '🔧',
+      'LOCKSMITH': '🔑',
+      'MOVING': '📦',
+      'AC_HEATING': '❄️',
+      'MASONRY': '🧱',
+      'GLASS': '🪟',
+      'PEST_CONTROL': '🐛',
+      'OTHER': '🔧',
+    };
+    return categoryIcons[categoryValue] ?? '🔧';
   }
 
   Map<String, dynamic> toJson() {
