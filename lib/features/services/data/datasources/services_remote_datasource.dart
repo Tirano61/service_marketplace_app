@@ -59,11 +59,22 @@ class ServicesRemoteDataSourceImpl implements ServicesRemoteDataSource {
   @override
   Future<List<CategoryModel>> getCategories() async {
     try {
-      final response = await _dio.get('/categories');
-      final List<dynamic> data = response.data['data'] ?? response.data;
-      return data.map((json) => CategoryModel.fromJson(json)).toList();
+      print('🔍 Obteniendo categorías desde /services/categories');
+      final response = await _dio.get('/services/categories');
+      print('✅ Respuesta recibida: ${response.statusCode}');
+      print('📦 Datos: ${response.data}');
+      
+      final List<dynamic> data = response.data is List 
+          ? response.data 
+          : (response.data['data'] ?? response.data);
+      
+      print('📊 Total de categorías: ${data.length}');
+      final categories = data.map((json) => CategoryModel.fromJson(json)).toList();
+      print('✨ Categorías parseadas correctamente');
+      
+      return categories;
     } catch (e) {
-      print('Error obteniendo categorías: $e');
+      print('❌ Error obteniendo categorías: $e');
       rethrow;
     }
   }

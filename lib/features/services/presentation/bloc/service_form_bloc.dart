@@ -36,13 +36,20 @@ class ServiceFormBloc extends Bloc<ServiceFormEvent, ServiceFormState> {
     LoadCategories event,
     Emitter<ServiceFormState> emit,
   ) async {
+    print('🔄 ServiceFormBloc: Cargando categorías...');
     emit(ServiceFormLoading());
 
     final result = await getCategoriesUseCase();
 
     result.fold(
-      (failure) => emit(ServiceFormError(failure.message ?? 'Error desconocido')),
-      (categories) => emit(ServiceFormReady(categories: categories)),
+      (failure) {
+        print('❌ ServiceFormBloc: Error al cargar categorías - ${failure.message}');
+        emit(ServiceFormError(failure.message ?? 'Error desconocido'));
+      },
+      (categories) {
+        print('✅ ServiceFormBloc: ${categories.length} categorías cargadas');
+        emit(ServiceFormReady(categories: categories));
+      },
     );
   }
 
